@@ -4,7 +4,12 @@ format: html
 editor: visual
 ---
 
-## Assignment 4
+# Assignment 4
+
+**MSB105 - Data Science\
+Gruppe 4: Hanna Sundal Bjerkreim & Elvar Solheim**
+
+## GDP NUTS3
 
 ```{r}
 #| label: setup
@@ -94,196 +99,69 @@ nama_10r_3gdp <- get_eurostat_data(
   filter(str_length(geo) == 5)
 ```
 
+## Population
+
+Oppgave 1:
+
 ```{r}
-c("AT", "DE", "DK", "FR", "EL","ES", "IT", "NL", "BE", 
-  "IE", "PL", "PT", "NO", "SE", "FI", "CH")
+pop_tabs <- toc_txt |> 
+# Regex AND external to regex
+   filter(
+     str_detect(
+       string = title,
+       # For å matche både små og store bokstaver
+       pattern = '[Pp][Oo][Pp][Uu][Ll][Aa][Tt][Ii][Oo][Nn] '
+       # AND vha. &
+       ) &
+     str_detect(
+       string = title,
+       # For å matche både små og store bokstaver og
+       # space eller ikke før 3
+       pattern = '[Nn][Uu][Tt][Ss]\\s*3'
+       )
+     ) |> 
+  select(title, code)
 ```
 
 ```{r}
-full_pop_nuts3 |> 
-  filter(geo %in% c("NO053", "NO060", "NO061")) |> 
-  filter(time %in% 2014:2020) |> 
-  arrange(time, geo)
-```
-
-```{r}
-full_pop_nuts3 <- full_pop_nuts3 |> 
-  mutate(
-    pop = ifelse(
-      test = is.na(pop.x) == TRUE, 
-      yes = pop.y, 
-      no = pop.x
-      )
-  ) |> 
-  select(-pop.x, -pop.y)
-```
-
-```{r}
-dim(eu_data)
-```
-
-```{r}
-eu_data <- eu_data |> 
-  mutate(
-    country = str_sub(geo, start = 1L, end = 2L)
-  )
-```
-
-```{r}
-eu_data |> 
-  distinct(geo, .keep_all = TRUE) |> 
-  group_by(country) |> 
-  summarise(Antall = n(), .groups = "drop")
-```
-
-```{r}
-eu_data |> 
-  summary()
-```
-
-```{r}
-eu_data <- eu_data |> 
-  select(country, NUTS3 = geo, year = time, gdp, pop)
-```
-
-```{r}
-# Rydder opp
-# Sletter alle objekt utenom eu_data
-# don't use if you don't mean it
-rm(list = setdiff(ls(), "eu_data"))
-```
-
-```{r}
-eu_data |>
-  select(gdp_per_capita) |> 
-  summary()
-```
-
-```{r}
-gini_NUTS2 <- eu_data |> 
-  group_by(NUTS2, country_name, country, year) |> 
-  summarise(
-    gini_nuts2 = Gini(
-      x = gdp_per_capita,
-      weights = pop,
-      na.rm = TRUE
-    ),
-    pop = sum(pop, na.rm = TRUE),
-    gdp = sum(gdp, na.rm = TRUE),
-    gdp_per_capita = gdp / pop,
-    num_nuts3 = n(),
-    .groups = "drop"
-    ) |> 
-  select(country_name, country, NUTS2, year, pop, gdp, 
-         gdp_per_capita, num_nuts3, gini_nuts2)
-```
-
-```{r}
-gini_NUTS2 |> 
-  summary() |> 
-  print(width = 80)
-```
-
-```{r}
-gini_NUTS2 |> 
-  select(-country_name) |> 
-  filter(gini_nuts2 < 0.001)
-```
-
-```{r}
-gini_NUTS1 |> 
-  summary() |> 
-  print(width = 80)
-```
-
-```{r}
-gini_NUTSc |> 
-  summary() |> 
-  print(width = 80)
-```
-
-```{r}
-gini_NUTS2_nest <- gini_NUTS2 |> 
-  group_by(country_name, country) |> 
-  nest(.key = "NUTS2_data") |> 
-  ungroup()
-```
-
-```{r}
-# don't run if you don't mean it.
-rm(list = setdiff(ls(), c("eu_data", "eu_data_nested")))
-```
-
-```{r}
-eu_data_nested |> 
-  unnest(NUTSc_data) |> 
-  filter(year == 2020) |> 
-  select(country_name, gini_nutsc) |> 
-  arrange(desc(gini_nutsc)) |> 
-  flextable() |> 
-  width(1, width = 1.5) |> 
-  width(2, width = 1.5)
-```
-
-```{r}
-eu_data_nested |> 
-  unnest(NUTS2_data) |> 
-  filter(country_name == "Frankrike") |> 
-  filter(year == 2020) |> 
-  select(NUTS2, gini_nuts2) |> 
-  arrange(desc(gini_nuts2)) |> 
+pop_tabs |> 
+  select(title, code) |> 
   flextable()  |> 
-  width(1, width = 1.5) |> 
+  width(1, width = 3.5) |> 
   width(2, width = 1.5)
 ```
 
+Oppgave 2:
+
 ```{r}
-NUTS2_diff <- eu_data_nested |> 
-  unnest(NUTS2_data) |> 
-  mutate(
-    # Når vi tar diff får vi en obs. mindre. Legger derfor inn en NA først
-    # i vektoren
-    diff_gdp_per_capita = c(NA, diff(gdp_per_capita)),
-    diff_gini_nuts2 = c(NA, diff(gini_nuts2))
-    ) |> 
-  select(country_name, country, NUTS2, year, diff_gdp_per_capita, diff_gini_nuts2) %>% 
-  # Fjerner obs. der vi har NA
-  filter(complete.cases(.)) |> 
-  group_by(country_name, country, NUTS2) |> 
-  nest(.key = "NUTS2_diff")
+dsd_pop <- get_eurostat_dsd("nama_10r_3popgdp")
 ```
 
 ```{r}
-NUTS2_diff <- NUTS2_diff  |> 
-  group_by(country_name, country, NUTS2) |> 
-  mutate(
-    mod_coeff = map_df(
-      .x = modell,
-      .f = coef
-      )
-    )
+dsd_pop |> 
+  head(n = 15) |> 
+  flextable()  |> 
+  width(1, width = 1) |> 
+  width(2, width = 1) |> 
+  width(3, width = 3.5)
 ```
 
 ```{r}
-NUTS2_diff <- NUTS2_diff  |> 
-  group_by(country_name, country, NUTS2) |> 
-  mutate(
-    mod_sum = map_df(
-      .x = modell,
-      .f = glance
-      )
-    )
+nama_10r_3popgdp <- get_eurostat_data(
+  id = "nama_10r_3popgdp",
+  filters = list(
+    geo = c("AT", "DE", "DK", "FR", "EL", "ES", 
+            "IT", "NL", "BE", "IE", "PL", "PT", "NO", "SE", "FI", "CH"),
+    nuts_level = "3",
+    unit = "A"
+  ),
+  exact_match = FALSE,
+  date_filter = 2000:2020,
+  stringsAsFactors = FALSE
+  ) |> 
+  # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
+  # NUTS1 og NUTSc  
+  filter(str_length(geo) == 5)
 ```
 
-```{r}
-NUTS2_diff$mod_coeff |> 
-  ggplot() +
-  geom_density(mapping = aes(x = diff_gdp_per_capita), adjust = 0.6) +
-  geom_vline(mapping = aes(xintercept = mean(diff_gdp_per_capita, na.rm = TRUE)), 
-                           colour = "gray60",
-                           linetype = "dashed")
-```
-
-```{r}
-summary(p_mod, vcov = function(x) vcovHC(x, method = "white2"))
-```
+## Alternative populasjonsdata
