@@ -4,10 +4,12 @@ format: html
 editor: visual
 ---
 
+
 # Regionale data fra Eurostat
 
 **MSB105 - Data Science\
 Gruppe 4: Hanna Sundal Bjerkreim & Elvar Solheim**
+
 
 ```{r}
 #| label: setup
@@ -24,6 +26,7 @@ library(broom)
 library(sandwich)
 ```
 
+
 I denne oppgaven skal vi hente ned regionale data fra EU sin statistikk organisasjon (Eurostat).
 Dataene vil vi aggregere på NUTS3-, NUTS2-, og NUTS1-nivå.
 Vi skal ordne dataene i list-columns ved hjelp av pakken tidyverse.
@@ -32,12 +35,15 @@ Etter organiseringen av data skal vi produsere ulike plots og estimere noen enkl
 
 ## toc.eurostat
 
+
 ```{r}
 # Henter innholdsfortegnelsen fra Eurostat
 toc_txt <- get_eurostat_toc(mode = "txt")
 ```
 
+
 ## GDP NUTS3
+
 
 ```{r}
 gdp_tabs <- toc_txt |> 
@@ -105,9 +111,11 @@ nama_10r_3gdp <- get_eurostat_data(
   filter(str_length(geo) == 5)
 ```
 
+
 ## Populasjonsdata
 
 ### Oppgave 1
+
 
 ```{r}
 pop_tabs <- toc_txt |> 
@@ -137,7 +145,9 @@ pop_tabs |>
   width(2, width = 1.5)
 ```
 
+
 ### Oppgave 2
+
 
 ```{r}
 dsd_pop <- get_eurostat_dsd("nama_10r_3popgdp")
@@ -170,9 +180,11 @@ nama_10r_3popgdp <- get_eurostat_data(
   filter(str_length(geo) == 5)
 ```
 
+
 ## Alternative populasjonsdata
 
 ### Oppgave 3
+
 
 ```{r}
 dsd_pop2 <- get_eurostat_dsd("demo_r_pjanaggr3")
@@ -204,6 +216,7 @@ demo_r_pjanaggr3 <- get_eurostat_data(
   # NUTS1 og NUTSc  
   filter(str_length(geo) == 5)
 ```
+
 
 ## Bearbeiding av populasjonsdata
 
@@ -241,74 +254,75 @@ demo_r_pjanaggr3 <- get_eurostat_data(
 
 ## "Nestete" datastruktur
 
-### Oppgave 19
+Oppgave 19
 
-### Oppgave 20
+Oppgave 20
 
-### Oppgave 21
+Oppgave 21
 
-### Oppgave 22
+Oppgave 22
 
 ## Plots
 
-### Oppgave 23
+Oppgave 23
 
-### Oppgave 24
+Oppgave 24
 
 ## Hvordan er verdiskapningen fordelt mellom regionene i ulike land?
 
-### Spania
+Spania
 
-#### Oppgave 25
+Oppgave 25
 
-#### Oppgave 26
+Oppgave 26
 
-#### Oppgave 27
+Oppgave 27
 
-#### Oppgave 28
+Oppgave 28
 
-### Tyskland
+Tyskland
 
-#### Oppgave 29
+Oppgave 29
 
-#### Oppgave 30
+Oppgave 30
 
-### Frankrike
+Frankrike
 
-#### Oppgave 31
+Oppgave 31
 
-#### Oppgave 32
+Oppgave 32
 
-#### Oppgave 33
+Oppgave 33
 
-#### Oppgave 34
+Oppgave 34
 
-#### Oppgave 35
+Oppgave 35
 
 ## Enkle modeller
 
-### "Data Science" modeller
+"Data Science" modeller
 
-#### Oppgave 36
+Oppgave 36
 
-#### Oppgave 37
+Oppgave 37
 
-#### Oppgave 38
+Oppgave 38
 
-#### Oppgave 39
+Oppgave 39
 
-#### Oppgave 40
+Oppgave 40
 
-#### Oppgave 41
+Oppgave 41
 
-#### Oppgave 42
+Oppgave 42
 
-#### Oppgave 43
+Oppgave 43
 
-### Panel modell
+Panel modell
 
-#### Oppgave 44
+Oppgave 44
 
-#### Oppgave 45
+Oppgave 45
 
-#### Oppgave 46
+Oppgave 46
+
