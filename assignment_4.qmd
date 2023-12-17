@@ -231,14 +231,11 @@ demo_r_pjanaggr3 <- get_eurostat_data(
   exact_match = FALSE,
   date_filter = 2000:2020,
   stringsAsFactors = FALSE,
-  verbose=TRUE
   ) |>
-  # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
-  # NUTS1 og NUTSc  
   filter(str_length(geo) == 5)
 ```
 
-## Bearbeiding av populasjonsdata
+## Bearbeidingav populasjonsdata
 
 Vi tar utgangspunkt i populasjonsdata fra tabellen «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» og supplerer med data fra tabellen «Population on 1 January by broad age group, sex and NUTS 3 region» der data mangler.
 
