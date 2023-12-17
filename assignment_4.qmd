@@ -24,20 +24,27 @@ library(broom)
 library(sandwich)
 ```
 
-I denne oppgaven skal vi hente ned regionale data fra EU sin statistikk organisasjon (Eurostat).
-Dataene vil vi aggregere på NUTS3-, NUTS2-, og NUTS1-nivå.
+I denne oppgaven skal vi hente ned regionale data fra Eurostat, som er EU sin statistikk organisasjon.
+Vi skal kommunisere med Eurostat ved hjelp av en api fra pakken restapi.
+Dataene skal vi aggregere på NUTS3-, NUTS2-, og NUTS1-nivå.
 Vi skal ordne dataene i list-columns ved hjelp av pakken tidyverse.
-Dette muliggjør "nested" data om brutto-nasjonalprodukt, befolkning, BNP per person og beregnet Gini-koeffisient for likhet/ulikhet mellom regioner med hensyn til verdiskaping i perioden 2000-2020.
+Dette muliggjør "nested" data som inneholder brutto-nasjonalprodukt, befolkning, BNP per person og beregnet Gini-koeffisient for likhet/ulikhet mellom regioner med hensyn til verdiskaping i perioden.
+Vi vil benytte data fra perioden 2000-2020.
 Etter organiseringen av data skal vi produsere ulike plots og estimere noen enkle modeller.
 
 ## toc.eurostat
 
+Først henter vi inn innholdsfortegnelsen fra Eurostat.
+
 ```{r}
-# Henter innholdsfortegnelsen fra Eurostat
+# Henter innholdsfortegnelse
 toc_txt <- get_eurostat_toc(mode = "txt")
 ```
 
 ## GDP NUTS3
+
+Videre laster vi inn data for brutto-nasjonalprodukt (GDP) på NUTS3-nivå.
+Først finner vi en oversikt over Eurostat sine tabeller som både inneholder *GDP* og *NUTS3*.
 
 ```{r}
 gdp_tabs <- toc_txt |> 
@@ -67,6 +74,9 @@ gdp_tabs |>
   width(2, width = 1.5)
 ```
 
+Vi velger å bentytte tabellen med kode nama_10r_3gdp, med følgende forklarende tekst: «Gross domestic product (GDP) at current market prices by NUTS 3 regions».
+Vi henter «Data Structure Definition» for å få en oversikt over hva som finnes i dette datasettet.
+
 ```{r}
 # description nama_10r_3gdp
 dsd_gdp <- get_eurostat_dsd("nama_10r_3gdp")
@@ -80,6 +90,10 @@ dsd_gdp |>
   width(2, width = 1) |> 
   width(3, width = 3.5)
 ```
+
+Vi velger MIO_PPS_EU27_2020 som mål på GDP.
+Dette gir GDP i løpende priser (million Euro).
+Vi laster ned data for Østerrike, Tyskland, Danmark, Frankrike, Hellas, Spania, Italia, Nederland, Belgia, Irland, Polen, Portugal, Norge, Sverige, Finland og Sveits.
 
 ```{r}
 # Gross domestic product (GDP) at current market prices by NUTS 3 regions 
@@ -109,6 +123,9 @@ nama_10r_3gdp <- get_eurostat_data(
 
 ### Oppgave 1
 
+Videre skal vi laste ned data for totalbefolkningen i de samme landene fordelt på NUTS3-nivå.
+Vi søker etter tabeller fra Eurostat som inneholder både *population* og *NUTS 3*.
+
 ```{r}
 pop_tabs <- toc_txt |> 
 # Regex AND external to regex
@@ -137,7 +154,13 @@ pop_tabs |>
   width(2, width = 1.5)
 ```
 
+Vi bruker tabellen med teksten: «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+Denne tabellen har manglende data for noen regioner, og vi skal senere supplere med data fra tabellen med teksten «Population on 1 January by broad age group, sex and NUTS 3 region».
+
 ### Oppgave 2
+
+Tabellen med teksten «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» har koden nama_10r_3popgdp.
+Vi laster ned Data Structure Definition (DSD) for denne tabellen.
 
 ```{r}
 dsd_pop <- get_eurostat_dsd("nama_10r_3popgdp")
@@ -152,6 +175,8 @@ dsd_pop |>
   width(3, width = 3.5)
 ```
 
+Ut i fra DSD formulerer vi en spørring mot Eurostat og laster ned populasjonsdata på NUTS3-nivå.
+
 ```{r}
 nama_10r_3popgdp <- get_eurostat_data(
   id = "nama_10r_3popgdp",
@@ -165,6 +190,10 @@ nama_10r_3popgdp <- get_eurostat_data(
   date_filter = 2000:2020,
   stringsAsFactors = FALSE
   ) |> 
+  mutate(pop = values * 1000
+         ) |>
+  select(-c(unit, values)
+         ) |>
   # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
   # NUTS1 og NUTSc  
   filter(str_length(geo) == 5)
@@ -173,6 +202,9 @@ nama_10r_3popgdp <- get_eurostat_data(
 ## Alternative populasjonsdata
 
 ### Oppgave 3
+
+Vi henter nå ned befolningsdata fra tabellen med teksten «Population on 1 January by broad age group, sex and NUTS 3 region».
+Denne tabellen har koden demo_r_pjanaggr3.
 
 ```{r}
 dsd_pop2 <- get_eurostat_dsd("demo_r_pjanaggr3")
@@ -194,12 +226,13 @@ demo_r_pjanaggr3 <- get_eurostat_data(
     geo = c("AT", "DE", "DK", "FR", "EL", "ES", 
             "IT", "NL", "BE", "IE", "PL", "PT", "NO", "SE", "FI", "CH"),
     nuts_level = "3",
-    unit = "A"
+    unit = "THS"
   ),
   exact_match = FALSE,
   date_filter = 2000:2020,
-  stringsAsFactors = FALSE
-  ) |> 
+  stringsAsFactors = FALSE,
+  verbose=TRUE
+  ) |>
   # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
   # NUTS1 og NUTSc  
   filter(str_length(geo) == 5)
@@ -207,31 +240,164 @@ demo_r_pjanaggr3 <- get_eurostat_data(
 
 ## Bearbeiding av populasjonsdata
 
+Vi tar utgangspunkt i populasjonsdata fra tabellen «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» og supplerer med data fra tabellen «Population on 1 January by broad age group, sex and NUTS 3 region» der data mangler.
+
 ### Oppgave 4
+
+Vi skal finne de NUTS3 sonene som inngår i «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions», men som ikke inngår i «Population on 1 January by broad age group, sex and NUTS 3 region».
+
+```{r}
+setdiff(nama_10r_3popgdp, demo_r_pjanaggr3)
+```
 
 ### Oppgave 5
 
+Vi skal nå finne NUTS3 soner som inngår i «Population on 1 January by broad age group, sex and NUTS 3 region», men som ikke inngår i «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+
+```{r}
+setdiff(demo_r_pjanaggr3, nama_10r_3popgdp )
+```
+
 ### Oppgave 6
+
+Vi skal nå foreta en full join av de to populasjonstabellene.
+
+```{r}
+full_pop_nuts3 
+```
 
 ### Oppgave 7
 
+Vi skal nå sjekke sonene i full_pop_nuts3 mot dem vi har i GDP tabellen.
+
 ### Oppgave 8
+
+Vi sjekker også om sonene i GDP tabellen mot dem vi har i full_pop_nuts3.
 
 ### Oppgave 9
 
+\*\*ZZZ er en slags oppsamlingskategori i gdp-dataene.
+Vi har ikke tilsvarende for befolkning så disse har vi ingen bruk for.
+Vi fjerner \*\*ZZZ sonene fra nama_10r_3gdp.
+
+```{r}
+full_pop_nuts3 |> 
+  filter(geo %in% c("NO053", "NO060", "NO061")) |> 
+  filter(time %in% 2014:2020) |> 
+  arrange(time, geo)
+```
+
+Vi ønsker å benytte dataene fra «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» (pop.x) der disse eksisterer og supplere med data fra «Population on 1 January by broad age group, sex and NUTS 3 region» (pop.y) der vi mangler data.
+Mangler vi data i begge tabellene setter vi verdien lik NA.
+
 ### Oppgave 10
+
+Vi lager en ny variabel pop i full_pop_nuts3 og dropper deretter variablene pop.x og pop.y.
+
+```{r}
+full_pop_nuts3 <- full_pop_nuts3 |> 
+  mutate(
+    pop = ifelse(
+      test = is.na(pop.x) == TRUE, 
+      yes = pop.y, 
+      no = pop.x
+      )
+  ) |> 
+  select(-pop.x, -pop.y)
+```
 
 ### Oppgave 11
 
+Videre undersøkes det om vi har noen NUTS 3 soner med pop lik 0.
+Disse rekodes til NA.
+
 ### Oppgave 12
+
+Vi har et helt sett av NUTS3 regioner som finnes i befolkningsdata, men ikke i gdp datasettet.
+Vi fjerner dem ved hjelp av en left_join der x er gdp-data.
+Da legger vi bare til befolkningsdata for de sonene hvor vi har gdp-data.
+
+Vi utfører en left_join() der populasjonsdata blir lagt til datasettet som innholder GDP-data.
+
+```{r}
+left_join()
+```
+
+```{r}
+dim(eu_data)
+```
+
+Sjekker hvor mange NUTS3 soner vi har i hvert land.
+Vi lager en ny variabel country fra de to første karakterene i NUTS3.
+
+```{r}
+eu_data <- eu_data |> 
+  mutate(
+    country = str_sub(geo, start = 1L, end = 2L)
+  )
+```
+
+Vi sjekker så antall NUTS3.
+
+```{r}
+eu_data |> 
+  distinct(geo, .keep_all = TRUE) |> 
+  group_by(country) |> 
+  summarise(Antall = n(), .groups = "drop")
+```
+
+Vi sjekker også summary for variablene i eu_data.
+
+```{r}
+eu_data |> 
+  summary()
+```
+
+Vi endrer navn og rekkefølge på variabelen i eu_data ved hjelp av select().
+
+```{r}
+eu_data <- eu_data |> 
+  select(country, NUTS3 = geo, year = time, gdp, pop)
+```
+
+```{r}
+# Rydder opp
+# Sletter alle objekt utenom eu_data
+# don't use if you don't mean it
+rm(list = setdiff(ls(), "eu_data"))
+```
 
 ### Oppgave 13
 
+Vi beregner gdp_per_capita for hver NUTS3 region for årene 2000-2020.
+Avrund til 2 desimaler.
+
+Sjekker summary gdp_per_capita.
+
+```{r}
+eu_data |>
+  select(gdp_per_capita) |> 
+  summary()
+```
+
 ### Oppgave 14
+
+Vi bruker case_when() for å legge til variabelen country_name.
+Østerrike for AT, Belgia for BE etc..
 
 ### Oppgave 15
 
-## Beregning av Gini
+Vi lager de tre variablene NUTS2, NUTS1 og NUTSc fra NUTS3.
+Dette gjøres vha.
+mutate() og str_sub().
+Bruker også select() for å få variablene i rekkefølgen: country_name, country, year, NUTS3, NUTS2, NUTS1, NUTSc, gdp, pop, gdp_per_capita .
+NUTSc er vår egen «oppfinnelse» og angir land (to første karakterer i NUTS kode).
+
+## Beregning av Gini-koeffisient
+
+Vi benytter Gini-koeffisient for å undersøke hvor jevnt *verdiskapningen* er fordelt mellom regioner.
+Vi skal nå beregne Gini for hvert år på NUTS2, NUTS1 og NUTSc nivå.
+Vi vil beregne Gini utfra gdp_per_capita og pop i NUTS3 for alle aggregeringsnivåene.
 
 ### Oppgave 16
 
@@ -240,6 +406,8 @@ demo_r_pjanaggr3 <- get_eurostat_data(
 ### Oppgave 18
 
 ## "Nestete" datastruktur
+
+Vi vil nå «neste» de ulike gini_NUTS\* datasettene og sette dem sammen til et nestet datasett eu_dataset_nestet som innholder alle dataene ovenfor i en fint ordnet struktur.
 
 ### Oppgave 19
 
