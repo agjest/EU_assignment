@@ -190,7 +190,7 @@ nama_10r_3popgdp <- get_eurostat_data(
   date_filter = 2000:2020,
   stringsAsFactors = FALSE
   ) |> 
-  mutate(pop = values * 1000
+  mutate(pop.x = values * 1000
          ) |>
   select(-c(unit, values)
          ) |>
@@ -211,7 +211,7 @@ dsd_pop2 <- get_eurostat_dsd("demo_r_pjanaggr3")
 ```
 
 ```{r}
-dsd_pop |> 
+dsd_pop2 |> 
   head(n = 15) |> 
   flextable()  |> 
   width(1, width = 1) |> 
@@ -226,63 +226,65 @@ demo_r_pjanaggr3 <- get_eurostat_data(
     geo = c("AT", "DE", "DK", "FR", "EL", "ES", 
             "IT", "NL", "BE", "IE", "PL", "PT", "NO", "SE", "FI", "CH"),
     nuts_level = "3",
-    unit = "THS"
+    unit = "NR"
   ),
   exact_match = FALSE,
   date_filter = 2000:2020,
   stringsAsFactors = FALSE,
   ) |>
+  select(geo, time, pop.y = values) |>
   filter(str_length(geo) == 5)
 ```
 
-## Bearbeidingav populasjonsdata
+## Bearbeiding av populasjonsdata
 
 Vi tar utgangspunkt i populasjonsdata fra tabellen «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» og supplerer med data fra tabellen «Population on 1 January by broad age group, sex and NUTS 3 region» der data mangler.
 
 ### Oppgave 4
 
-Vi skal finne de NUTS3 sonene som inngår i «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions», men som ikke inngår i «Population on 1 January by broad age group, sex and NUTS 3 region».
-
 ```{r}
-setdiff(nama_10r_3popgdp, demo_r_pjanaggr3)
+setdiff(nama_10r_3popgdp$geo, demo_r_pjanaggr3$geo)
 ```
+
+Vi sjekker hvilke NUTS 3 soner som inngår i tabellen "Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions", men ikke i tabellen "Population on 1 January by broad age group, sex and NUTS 3 region".
 
 ### Oppgave 5
 
-Vi skal nå finne NUTS3 soner som inngår i «Population on 1 January by broad age group, sex and NUTS 3 region», men som ikke inngår i «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
-
 ```{r}
-setdiff(demo_r_pjanaggr3, nama_10r_3popgdp )
+setdiff(demo_r_pjanaggr3$geo, nama_10r_3popgdp$geo )
 ```
+
+Vi sjekker også hvilke NUTS 3 soner som inngår i tabellen «Population on 1 January by broad age group, sex and NUTS 3 region», men ikke i tabellen «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
 
 ### Oppgave 6
 
 Vi skal nå foreta en full join av de to populasjonstabellene.
 
 ```{r}
-full_pop_nuts3 
+full_pop_nuts3 <- full_join(nama_10r_3popgdp,demo_r_pjanaggr3)
 ```
 
 ### Oppgave 7
 
-Vi skal nå sjekke sonene i full_pop_nuts3 mot dem vi har i GDP tabellen.
+Vi sjekker sonene i full_pop_nuts3 mot dem vi har i GDP tabellen.
+
+```{r}
+setdiff(full_pop_nuts3$geo, nama_10r_3gdp$geo)
+```
 
 ### Oppgave 8
 
 Vi sjekker også om sonene i GDP tabellen mot dem vi har i full_pop_nuts3.
+
+```{r}
+setdiff(nama_10r_3gdp$geo, full_pop_nuts3$geo)
+```
 
 ### Oppgave 9
 
 \*\*ZZZ er en slags oppsamlingskategori i gdp-dataene.
 Vi har ikke tilsvarende for befolkning så disse har vi ingen bruk for.
 Vi fjerner \*\*ZZZ sonene fra nama_10r_3gdp.
-
-```{r}
-full_pop_nuts3 |> 
-  filter(geo %in% c("NO053", "NO060", "NO061")) |> 
-  filter(time %in% 2014:2020) |> 
-  arrange(time, geo)
-```
 
 Vi ønsker å benytte dataene fra «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions» (pop.x) der disse eksisterer og supplere med data fra «Population on 1 January by broad age group, sex and NUTS 3 region» (pop.y) der vi mangler data.
 Mangler vi data i begge tabellene setter vi verdien lik NA.
