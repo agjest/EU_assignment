@@ -731,8 +731,8 @@ Samtidig ser vi en jevn økning i GDP per capita fra 2000 til 2018, men en nedga
 For IE05 varierer Gini-koeffisienten gjennom årene, men det er en tydelig økning fra 2018 til 2020.
 GDP per capita har hatt en jevn økning over hele perioden, med en betydelig økning fra 2018 til 2020.
 For IE06 har Gini-koeffisienten variert, men hatt en markant økning fra 2016 til 2020.
-GDP per capita har hatt en jevn økning fra 2000 til 2020.
-\
+GDP per capita har hatt en jevn økning fra 2000 til 2020.\
+
 \
 Det ser ut til å være en tendens til økende ulikhet i alle regionene mot slutten av perioden, spesielt fra 2018 til 2020.
 For IE04 og IE06 ser vi at økning i Gini-koeffisienten korrelerer med økning i GDP oer capita.
