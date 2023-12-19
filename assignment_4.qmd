@@ -26,7 +26,7 @@ library(sandwich)
 
 I denne oppgaven skal vi hente ned regionale data fra Eurostat, som er EU sin statistikk organisasjon.
 Vi skal kommunisere med Eurostat ved hjelp av en api fra pakken restapi.
-Dataene skal vi aggregere på NUTS3-, NUTS2-, og NUTS1-nivå.
+Vi henter regionale GDP data og populasjonsdata for et utvalg land på NUTS3 nivå og aggregerer senere opp til NUTS2, NUTS1 og NUTSc nivå.
 Vi skal ordne dataene i list-columns ved hjelp av pakken tidyverse.
 Dette muliggjør "nested" data som inneholder brutto-nasjonalprodukt, befolkning, BNP per person og beregnet Gini-koeffisient for likhet/ulikhet mellom regioner med hensyn til verdiskaping i perioden.
 Vi vil benytte data fra perioden 2000-2020.
@@ -233,6 +233,8 @@ demo_r_pjanaggr3 <- get_eurostat_data(
   stringsAsFactors = FALSE,
   ) |>
   select(geo, time, pop.y = values) |>
+  # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
+  # NUTS1 og NUTSc  
   filter(str_length(geo) == 5)
 ```
 
@@ -459,9 +461,52 @@ Vi vil beregne Gini utfra gdp_per_capita og pop i NUTS3 for alle aggregeringsniv
 
 ### Oppgave 16
 
+```{r}
+gini_NUTS2 <- eu_data |> 
+  group_by(NUTS2, country_name, country, year) |> 
+  summarise(
+    gini_nuts2 = Gini(
+      x = gdp_per_capita,
+      weights = pop,
+      na.rm = TRUE
+    ),
+    pop = sum(pop, na.rm = TRUE),
+    gdp = sum(gdp, na.rm = TRUE),
+    gdp_per_capita = gdp / pop,
+    num_nuts3 = n(),
+    .groups = "drop"
+    ) |> 
+  select(country_name, country, NUTS2, year, pop, gdp, 
+         gdp_per_capita, num_nuts3, gini_nuts2)
+```
+
+```{r}
+gini_NUTS2 |> 
+  summary() |> 
+  print(width = 80)
+```
+
+```{r}
+gini_NUTS2 |> 
+  select(-country_name) |> 
+  filter(gini_nuts2 < 0.001)
+```
+
 ### Oppgave 17
 
+```{r}
+gini_NUTS1 |> 
+  summary() |> 
+  print(width = 80)
+```
+
 ### Oppgave 18
+
+```{r}
+gini_NUTSc |> 
+  summary() |> 
+  print(width = 80)
+```
 
 ## "Nestete" datastruktur
 
