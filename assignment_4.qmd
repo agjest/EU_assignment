@@ -743,11 +743,9 @@ Kort forklart er årsaken til Irlands spesielle kurver at Apple Inc. restrukture
 
 ### Spania
 
-Spania hadde i år 2020 en Gini-koeffisient lik 0,14 som skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene.
-
 #### Oppgave 25
 
-25. Lag et line-plot som viser utviklingen i Gini-koeffisientene for NUTS2 regionene i Spania
+25. Lager et line-plot som viser utviklingen i Gini-koeffisientene for NUTS2 regionene i Spania
 
 ```{r}
 eu_data_nested |>
@@ -773,10 +771,19 @@ eu_data_nested |>
 
 #### Oppgave 27
 
+Gini-koeffisientene i 2020 spenner fra ca.
+0.01 til over 0.1.
+Det ser altså ut til å være noen forskjeller mellom NUTS2 regionene i Spania, de fleste ligger i spennet fra ca.
+0,02 til ca.
+0,05 noe som tilsier en relativit lik økonomisk aktivitet og moderat til middels ulikhet.
+De gjennstående tre regionene spenner fra 0,08 til nesten 0,12 og disse er derfor noe mer ulike enn de andre noe som kan tyde på mindre økonomisk aktivitet og en mye større ulikhet.\
+
+Ser vi på NUTS1 regionene har vi to med lav ulikhet, to med middels ulikhet og to med ekstrem ulikhet.
+Dette kan forklare noe av grunnen til at så mange NUTS3 lå samlet, nemlig fordi spriket i NUTS1 er ganske gjennomsnittelig på middels forskjeller og man ser videre at forskjellene er både ganske små og store innenfor visse NUTS1 regioner.
+
 #### Oppgave 28
 
-28. Lag et line-plot (plottet vist i [Figur 3](https://msb105.netlify.app/assignments/h23/ass4/ass4-h23#fig-spania-gdppc-nuts2)) som viser utviklingen i gdp_per_capita (nominelle verdier) for de ulike NUTS2 regionene i Spania.
-    Hva er det vi ser effekten av til høyre i [Figur 3](https://msb105.netlify.app/assignments/h23/ass4/ass4-h23#fig-spania-gdppc-nuts2)?
+28. Lag et line-plot (plottet vist i [Figur 3](https://msb105.netlify.app/assignments/h23/ass4/ass4-h23#fig-spania-gdppc-nuts2)) som viser utviklingen i gdp_per_capita (nominelle verdier) for de ulike NUTS2 regionene i Spania. Hva er det vi ser effekten av til høyre i [Figur 3](https://msb105.netlify.app/assignments/h23/ass4/ass4-h23#fig-spania-gdppc-nuts2)?
 
 ```{r}
 eu_data_nested |>
@@ -787,15 +794,13 @@ eu_data_nested |>
   geom_line()
 ```
 
-### Tyskland
+Det vi ser effekten av er at gdp per capita synker for alle regioner når covid19 ankom.
 
-Tyskland hadde i år 2020 en Gini-koeffisient lik 0,20 som skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene.
-Tyskland ligger likevel relativt høyt blandt landene vi har i vårt utvalg.
-Dette skulle indikere større spredning mellom regionene i Tyskland.
+### Tyskland
 
 #### Oppgave 29
 
-29. Lag et line-plot som viser utviklingen i Gini-koeffisient for NUTS2 regionene i Tyskland.
+29. Et line-plot som viser utviklingen i Gini-koeffisient for NUTS2 regionene i Tyskland:
 
 ```{r}
 eu_data_nested |>
@@ -808,6 +813,8 @@ eu_data_nested |>
 
 #### Oppgave 30
 
+Line-plot som viser utviklingen i Gini-koeffisient for NUTS1 regionene i Tyskland:
+
 ```{r}
 eu_data_nested |>
   filter(country_name == "Tyskland") |>
@@ -817,14 +824,13 @@ eu_data_nested |>
   geom_line()
 ```
 
-### Frankrike
+Vi finner samme trend i NUTS1 regionene.
 
-Frankrike hadde i år 2020 en Gini-koeffisient lik 0,206 som også skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene.
-Frankrike ligger imidlertid høyt blandt landene vi har i vårt utvalg.
+### Frankrike
 
 #### Oppgave 31
 
-31. Vis utviklingen i Gini-koeffisient for NUTS2 regionene i Frankrike i et line-plot.
+31. Utviklingen i Gini-koeffisient for NUTS2 regionene i Frankrike i et line-plot:
 
 ```{r}
 eu_data_nested |>
@@ -837,23 +843,22 @@ eu_data_nested |>
 
 #### Oppgave 32
 
-32. Vis utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plot.
+32. Utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plot:
 
 ```{r}
-eu_data_nested |> 
-  unnest(NUTS1_data) |> 
-  filter(country_name == "Frankrike") |> 
-  filter(year == 2020) |> 
-  select(NUTS1, gini_nuts1) |> 
-  arrange(desc(gini_nuts1)) |> 
-  flextable()  |> 
-  width(1, width = 1.5) |> 
-  width(2, width = 1.5)
+eu_data_nested |>
+  filter(country_name == "Frankrike") |>
+  unnest(NUTS1_data) |>
+  select(NUTS1, year,gini_nuts1) |>
+  ggplot(aes(x = year, y = gini_nuts1, group = NUTS1, color = NUTS1)) +
+  geom_line()
 ```
 
 #### Oppgave 33
 
-33. **Vi ser at for Frankrike er det en region (FR1) som har klart større forskjeller mht. verdistgning enn de andre. Sjekk denne regionen nærmere.**
+Vi ser at det store inntektsforskjeller i gdp i denne regionen, som kan være en idikator på at det er store forskjeller mellom de som har mest og de som har minst, som igjen resulterer i en høyere gini-faktor.
+Vi ser også at dette er Paris--regionen, og man kan dermed tenke seg at hypotesen ovenfor stemmer i og med at det nok finnes svært velstående og langt mindre velstående områder her.
+Vi skal undersøke dette nærmere nedenfor:
 
 #### Oppgave 34
 
@@ -870,7 +875,9 @@ eu_data |>
 
 #### Oppgave 35
 
-35. Hva ser ut til å være årsaken til den høye Gini-koeffisienten for FR1?
+Det ser ut til at det er betydelige forskjeller i GDP per capita mellom ulike NUTS3-regioner i FR1.
+Regioner som FR105 og FR101 har høyere GDP per capita sammenlignet med andre regioner som FR102 og FR108.
+Dette skaper større ulikheter og forklarer den høye gini-faktoren.
 
 ## Enkle modeller
 
@@ -981,16 +988,92 @@ cat("P-verdi:", t_test_result$p.value, "\n")
 
 ### Panel modell
 
-#### Oppgave 44
+#### Oppgave 44 og 45
 
 ```{r}
-# Utfører panelregresjon
-p_mod <- plm(diff_gini_nuts2 ~ diff_gdp_per_capita, data = NUTS2_diff, index = c("NUTS2", "year"), model = "within")
-
-# Skriver ut resultatene av regresjonen
-summary(p_mod)
+NUTS2_diff_pdata <- NUTS2_diff |>
+  unnest(NUTS2_diff) %>%
+  # dropper list-columns
+  # Bruker %>% for å kunne benytte . for data
+  select(-modell, -mod_coeff, -mod_sum)
 ```
 
-#### Oppgave 45
+```{r}
+# Utfør panelregresjon
+p_mod <- plm(diff_gini_nuts2 ~ diff_gdp_per_capita, data = NUTS2_diff_pdata, index = c("NUTS2", "year"), model = "within")
+
+# Skriv ut resultatene av regresjonen
+summary(p_mod)
+
+```
+
+Tolkning av resultatene:
+
+1.  **Residuals (Feil):**
+
+    -   **Min. til Max.:** Dette viser spredningen av de beregnede feiltermene (residuals) i modellen. Minimumsverdien er -0.2643, og maksimumsverdien er 0.2851.
+
+2.  **Coefficients (Koeffisienter):**
+
+    -   **Estimate (Estimat):** 3.0221e-06 er estimert endring i Gini-koeffisienten for hver enhet endring i GDP per capita.
+        Med andre ord, en liten positiv endring i GDP per capita er forbundet med en liten positiv endring i Gini-koeffisienten.
+
+    -   **Std. Error (Standardfeil):** 1.3226e-07 er standardfeilen knyttet til estimatet.
+        Dette gir en indikasjon på usikkerheten rundt estimatet.
+
+    -   **t-value:** 22.849 er t-verdien, som er et mål på hvor langt estimatet er fra null, relativt til standardfeilen.
+        Jo høyere t-verdien er, jo mer signifikant er koeffisienten.
+
+    -   **Pr(\>\|t\|):** \< 2.2e-16 er p-verdien, som indikerer signifikansnivået.
+        I dette tilfellet er p-verdien svært lav, noe som tyder på at koeffisienten er svært signifikant.
+
+3.  **Model Fit (Modelltilpasning):**
+
+    -   **Total Sum of Squares:** 1.9594 er den totale variansen i Gini-koeffisienten.
+
+    -   **Residual Sum of Squares:** 1.6911 er den gjenværende variansen som ikke forklares av modellen.
+
+    -   **R-Squared:** 0.13692 er R-kvadrat, som er et mål på hvor mye variasjon i Gini-koeffisienten modellen forklarer.
+        Her forklarer modellen omtrent 13.7% av variansen.
+
+    -   **Adj. R-Squared:** 0.091551 er justert R-kvadrat, som tar hensyn til antall prediktorer i modellen.
+        Det justerte R-kvadratet er lavere enn R-kvadratet og tar hensyn til over-tilpasning.
+
+4.  **F-statistic:** 522.094 er F-statistikken, som tester nullhypotesen om at alle koeffisientene i modellen er lik null.
+    En høy F-verdi indikerer at modellen er signifikant.
+
+5.  **P-value for F-statistic:** \< 2.22e-16 er p-verdien for F-statistikken, og den er svært lav.
+    Dette indikerer at modellen som helhet er signifikant.
+
+Samlet sett tyder resultatene på at det er en signifikant sammenheng mellom endringer i GDP per capita og endringer i Gini-koeffisienten, og at modellen er statistisk signifikant.
 
 #### Oppgave 46
+
+```{r}
+summary(p_mod, vcov = function(x) vcovHC(x, method = "white2"))
+```
+
+I den siste koden bruker du vcov-argumentet i summary-funksjonen for å tilpasse standardfeilene ved hjelp av robust standardfeilsmetode (vcovHC med method = "white2").
+Dette gir deg heteroskedastisitet-korrigerte standardfeil i tillegg til de vanlige standardfeilene.
+
+Sammenligning av resultatene fra de to summary-kallene:
+
+1.  Vanlig summary-kall:
+
+-   Standardfeilene er basert på antagelsen om homoskedastisitet (konstant feilvarians).
+-   t-verdien for diff_gdp_per_capita er 22.849.
+-   Antall frihetsgrader er basert på det totale antallet observasjoner (DF), som er 3291.
+-   F-statistikken er 522.094.
+
+1.  summary-kall med robuste standardfeil:
+
+-   Standardfeilene er basert på heteroskedastisitet-robuste standardfeil (vcovHC med method = "white2").
+-   t-verdien for diff_gdp_per_capita er 18.538.
+-   Antall frihetsgrader er basert på antall grupper (NUTS2) og antall tidspunkter (year), som er 173 og 172.
+-   F-statistikken er 343.639.
+
+Forskjellene i t-verdier og F-statistikken indikerer at de robuste standardfeilene gir annerledes inferens om signifikansnivået.
+I tillegg indikerer bruk av robuste standardfeil en form for korrigering for mulig heteroskedastisitet i feiltermen.
+
+Generelt er bruken av robuste standardfeil spesielt relevant når det er mistanke om at feilvariansen kan være heteroskedastisk.
+Hvis antagelsen om homoskedastisitet brytes, kan de robuste standardfeilene gi mer pålitelige inferenser om parameterestimatene.
