@@ -1,0 +1,39 @@
+---
+title: "ag_comments"
+format: 
+  html: default
+  pdf: default
+editor: visual
+---
+
+-   Dokumentet er reproduserbart. Flott!
+-   Oppgave 1: pattern = '\[Pp\]\[Oo\]\[Pp\]\[Uu\]\[Ll\]\[Aa\]\[Tt\]\[Ii\]\[Oo\]\[Nn\] ' er kanskje litt voldsomt. Tviler på at selv eurostat kan finne på å skrive PoPUlatIoN, men dere har dekket alle alternativ ;-). Tror '\[Pp\]opulation' hadde holdt ;-)
+-   Oppgave 6: Dere får en full_join vha. variablene geo og time som er de eneste variablene som inngår i både nama_10r_3popgdp,demo_r_pjanaggr3. I dette tilfellet er det det vi ønsker. Generelt vil jeg anbefale å spesifiser variablene selv for da har en mer kontroll over hva som blir gjort. Dvs. brukt koden (merk at jeg bruker argumetnavn for å gjøre det lettere å skjønne hva som skjer når en vender tilbake til koden):
+
+```{r}
+#| eval: false
+full_pop_nuts3 <- full_join(
+  x = nama_10r_3popgdp,
+  y = demo_r_pjanaggr3, 
+  by = join_by(geo, time)
+  )
+```
+
+-   Oppgave 9: Flott bruk av `grepl()`.
+-   Oppgave 23: Horisontal akse i plottet blir overbefolket siden year er integer variabel. Hvis vi konverterer year til date objekt så vil ggplot selv formatere horisontal akse fint for oss. Gjøres lett vha. en mutate() og make_date() i pipen. Se forslag for endret kode. For tabellen i oppgave 23 la jeg inn #\| message: false for å slippe noe shiny.tags greier.
+-   Oppgave 24: Vil foreslå å vise både gini_nuts2 og gdp_per_capita i samme tabell. Se forslag til endret kode. Fin forklaring/diskusjon av hva vi ser i tabellene. Bra!
+-   Oppgave 25: La inn #\| warning: false i code-chunk for å slippe warning om missing values. La også inn `mutate(year = make_date(year))` for fiks horisontal akse.
+-   Oppgave 26: La inn #\| warning: false i code-chunk for å slippe warning om missing values. La også inn `mutate(year = make_date(year))` for fiks horisontal akse.
+-   Oppgave 28: fikset year. Fin kommentar om covid-19.
+-   Oppgave 29: La inn #\| warning: false i code-chunk for å slippe warning om missing values. La også inn `mutate(year = make_date(year))` for fiks horisontal akse.
+-   Oppgave 30: La inn #\| warning: false i code-chunk for å slippe warning om missing values. La også inn `mutate(year = make_date(year))` for fiks horisontal akse.
+-   Oppgave 31: warning og year. Samme for følgende plot så jeg dropper å liste dem.
+-   Oppgave 34: #\| message: false for å slippe shiny.tag.list
+-   Oppgave 35: Fin kommentar.
+-   Oppgave 41: Fin bruk av `cat()`.
+-   Oppgave 46: Flott diskusjon av resultatene.
+-   YAML: Lagt inn forslag for å kunne generere html, pdf og docx format og også for å skjule kode. PDF-filen trenger litt finpuss på noen tabeller og caption med kryssreferanser hadde vært fint, men ellers er det en fiks ferdig rapport.
+-   Oppsummert: Et meget bra besvart assignment.
+    -    Jeg satte særlig pris på at dere diskuterte/forklarte resultatene.
+    -   Koden var også klar og fint formatert.
+    -   Merket meg også at dere brukte funksjoner som vi ikke har gjennomgått på forelesning

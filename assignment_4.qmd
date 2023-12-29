@@ -1,7 +1,13 @@
 ---
 title: "assignment_4"
-format: html
+format: 
+  html: default
+  pdf:
+    toc: true
+  docx: default
 editor: visual
+execute:
+  echo: false
 ---
 
 # Regionale data fra Eurostat
@@ -74,7 +80,7 @@ gdp_tabs |>
   width(2, width = 1.5)
 ```
 
-Vi velger å bentytte tabellen med kode nama_10r_3gdp, med følgende forklarende tekst: «Gross domestic product (GDP) at current market prices by NUTS 3 regions».
+Vi velger å benytte tabellen med kode nama_10r_3gdp, med følgende forklarende tekst: «Gross domestic product (GDP) at current market prices by NUTS 3 regions».
 Vi henter videre «Data Structure Definition» (DSD) for å få en oversikt over hva som finnes i dette datasettet.
 
 ```{r}
@@ -678,6 +684,8 @@ Vi skal nå generere ett plott som viser utviklingen i Gini-koeffisient på nasj
 eu_data_nested |> 
   unnest(NUTSc_data) |>
   select(year, gini_nutsc, country_name) |>
+  # ag_comment: lagt til make_date for å få fin horisontal akse
+  mutate(year = make_date(year)) |> 
   ggplot(aes(x = year, y = gini_nutsc, group = country_name, color = country_name)) +
   geom_line()
 ```
@@ -685,6 +693,7 @@ eu_data_nested |>
 Tabellen under viser Gini i år 2020 for alle landene.
 
 ```{r}
+#| message: false
 eu_data_nested |> 
   unnest(NUTSc_data) |> 
   filter(year == 2020) |> 
@@ -704,18 +713,21 @@ Vi skal nå se nærmere på utvikling i gini-koeffisient og gdp_per_capita for d
 I tabellen under ser vi en oversikt over utviklingen i Gini-koeffisient for NUTS2 sonene i Irland.
 
 ```{r}
+#| messsage: false
 eu_data_nested |> 
   filter(country_name == "Irland") |>
   unnest(NUTS2_data) |> 
-  select(NUTS2, year, gini_nuts2) |> 
+  select(NUTS2, year, gini_nuts2, gdp_per_capita) |> 
   flextable() |> 
   width(1, width = 1.5) |> 
   width(2, width = 1.5)
 ```
 
-I tabellen under ser vi en oversikt over utviklingen i gdp_per_capita for de ulike NUTS2 sonene i Irland.
+I tabellen over ser vi en oversikt over utviklingen i gdp_per_capita for de ulike NUTS2 sonene i Irland.
 
 ```{r}
+#| eval: false
+#| echo: false
 eu_data_nested |> 
   filter(country_name == "Irland") |>
   unnest(NUTS2_data) |> 
@@ -748,10 +760,13 @@ Kort forklart er årsaken til Irlands spesielle kurver at Apple Inc. restrukture
 25. Lager et line-plot som viser utviklingen i Gini-koeffisientene for NUTS2 regionene i Spania
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Spania") |>
   unnest(NUTS2_data) |>
   select(NUTS2, year,gini_nuts2) |>
+  # ag_comment: lagt til make_date for å få fin horisontal akse
+  mutate(year = make_date(year)) |> 
   ggplot(aes(x = year, y = gini_nuts2, group = NUTS2, color = NUTS2)) +
   geom_line()
 ```
@@ -761,10 +776,13 @@ eu_data_nested |>
 26. Gjør tilsvarende for NUTS1 regionene i Spania
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Spania") |>
   unnest(NUTS1_data) |>
   select(NUTS1, year,gini_nuts1) |>
+  # ag_comment: lagt til make_date for å få fin horisontal akse
+  mutate(year = make_date(year)) |> 
   ggplot(aes(x = year, y = gini_nuts1, group = NUTS1, color = NUTS1)) +
   geom_line()
 ```
@@ -776,7 +794,7 @@ Gini-koeffisientene i 2020 spenner fra ca.
 Det ser altså ut til å være noen forskjeller mellom NUTS2 regionene i Spania, de fleste ligger i spennet fra ca.
 0,02 til ca.
 0,05 noe som tilsier en relativit lik økonomisk aktivitet og moderat til middels ulikhet.
-De gjennstående tre regionene spenner fra 0,08 til nesten 0,12 og disse er derfor noe mer ulike enn de andre noe som kan tyde på mindre økonomisk aktivitet og en mye større ulikhet.\
+De gjennstående tre regionene spenner fra 0,08 til nesten 0,12 og disse er derfor noe mer ulike enn de andre noe som kan tyde på mindre økonomisk aktivitet og en mye større ulikhet.
 
 Ser vi på NUTS1 regionene har vi to med lav ulikhet, to med middels ulikhet og to med ekstrem ulikhet.
 Dette kan forklare noe av grunnen til at så mange NUTS3 lå samlet, nemlig fordi spriket i NUTS1 er ganske gjennomsnittelig på middels forskjeller og man ser videre at forskjellene er både ganske små og store innenfor visse NUTS1 regioner.
@@ -790,6 +808,8 @@ eu_data_nested |>
   filter(country_name == "Spania") |>
   unnest(NUTS2_data) |>
   select(NUTS2, year,gdp_per_capita) |>
+  # ag_comment: lagt til make_date for å få fin horisontal akse
+  mutate(year = make_date(year)) |> 
   ggplot(aes(x = year, y = gdp_per_capita, group = NUTS2, color = NUTS2)) +
   geom_line()
 ```
@@ -803,10 +823,13 @@ Det vi ser effekten av er at gdp per capita synker for alle regioner når covid1
 29. Et line-plot som viser utviklingen i Gini-koeffisient for NUTS2 regionene i Tyskland:
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Tyskland") |>
   unnest(NUTS2_data) |>
   select(NUTS2, year,gini_nuts2) |>
+  # ag_comment: lagt til make_date for å få fin horisontal akse
+  mutate(year = make_date(year)) |> 
   ggplot(aes(x = year, y = gini_nuts2, group = NUTS2, color = NUTS2)) +
   geom_line()
 ```
@@ -816,10 +839,12 @@ eu_data_nested |>
 Line-plot som viser utviklingen i Gini-koeffisient for NUTS1 regionene i Tyskland:
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Tyskland") |>
   unnest(NUTS1_data) |>
   select(NUTS1, year,gini_nuts1) |>
+  mutate(year = make_date(year))  |> 
   ggplot(aes(x = year, y = gini_nuts1, group = NUTS1, color = NUTS1)) +
   geom_line()
 ```
@@ -833,10 +858,12 @@ Vi finner samme trend i NUTS1 regionene.
 31. Utviklingen i Gini-koeffisient for NUTS2 regionene i Frankrike i et line-plot:
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Frankrike") |>
   unnest(NUTS2_data) |>
   select(NUTS2, year,gini_nuts2) |>
+  mutate(year = make_date(year))  |> 
   ggplot(aes(x = year, y = gini_nuts2, group = NUTS2, color = NUTS2)) +
   geom_line()
 ```
@@ -846,10 +873,12 @@ eu_data_nested |>
 32. Utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plot:
 
 ```{r}
+#| warning: false
 eu_data_nested |>
   filter(country_name == "Frankrike") |>
   unnest(NUTS1_data) |>
   select(NUTS1, year,gini_nuts1) |>
+  mutate(year = make_date(year))  |> 
   ggplot(aes(x = year, y = gini_nuts1, group = NUTS1, color = NUTS1)) +
   geom_line()
 ```
@@ -863,6 +892,7 @@ Vi skal undersøke dette nærmere nedenfor:
 #### Oppgave 34
 
 ```{r}
+#| message: false
 eu_data |>
   filter(country_name == "Frankrike" & NUTS1 == "FR1") |>
   select(NUTS3, year, gdp_per_capita) |>
@@ -870,7 +900,6 @@ eu_data |>
   flextable() |>
   width(1, width = 1.5) |>
   width(2, width = 1.5)
-
 ```
 
 #### Oppgave 35
